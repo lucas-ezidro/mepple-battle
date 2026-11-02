@@ -2,7 +2,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-Install dependencies with `pnpm install` and set `DATABASE_URL` to your PostgreSQL
+Use Node.js 22 and pnpm 10.27.0. Copy `.env.example` to `.env.local`, install
+dependencies with `pnpm install`, and set `DATABASE_URL` to your PostgreSQL
 connection string in `.env.local` (or in the environment).
 
 The Prisma Client is generated automatically before `pnpm dev` and `pnpm build`.
@@ -136,8 +137,65 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy na Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+O projeto usa Next.js com APIs, sessoes e PostgreSQL: nao use exportacao estatica.
+A configuracao em [`vercel.json`](./vercel.json) seleciona Next.js, instala com
+`pnpm install --frozen-lockfile` e executa `pnpm build:vercel` usando Node.js 22.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 1. Criar o banco e configurar variaveis
+
+Crie um PostgreSQL hospedado, por exemplo no Neon ou Supabase (tambem disponiveis
+no [Vercel Marketplace](https://vercel.com/marketplace)). O PostgreSQL local
+nao fica acessivel ao deploy. Prefira um banco proximo da regiao das Functions.
+
+Em **Settings > Environment Variables**, configure:
+
+| Variavel | Uso |
+| --- | --- |
+| `DATABASE_URL` | Obrigatoria: URL PostgreSQL com pooling fornecida pelo provedor, usada pela aplicacao. Preserve os parametros de SSL exigidos pelo provedor. |
+| `DIRECT_URL` | URL PostgreSQL direta, sem pooler, usada pelas migrations. Recomendada quando `DATABASE_URL` usa pooling; se ausente, as migrations usam `DATABASE_URL`. |
+| `LUDOPEDIA_ACCESS_TOKEN` | Necessaria para pesquisar jogos no catalogo Ludopedia. |
+| `LUDOPEDIA_APP_ID` / `LUDOPEDIA_APP_KEY` | Opcionais: recuperacao de contas antigas via OAuth. |
+
+Essas variaveis sao exclusivas do servidor: nao use o prefixo `NEXT_PUBLIC_`.
+Nao publique `.env.local` nem credenciais no Git; `.env.example` contem apenas
+os nomes das variaveis.
+
+**Separe Production e Preview:** configure URLs de bancos diferentes para cada
+ambiente (ou branches isoladas do banco). Como as migrations sao automaticas,
+um preview conectado ao banco de producao tambem alteraria seu schema. Nao
+habilite previews com as credenciais de producao.
+
+### 2. Importar e publicar
+
+1. Envie o projeto para seu repositorio Git e importe-o em
+   [vercel.com/new](https://vercel.com/new).
+2. Use a raiz do repositorio como **Root Directory** e o preset **Next.js**.
+   Os comandos de instalacao e build ja estao definidos no repositorio.
+3. Configure as variaveis acima antes do primeiro deploy e publique.
+4. Se usar OAuth Ludopedia, registre a URL exata
+   `https://SEU-DOMINIO/api/auth/ludopedia/callback` no provedor. Use um dominio
+   estavel; URLs temporarias de preview precisam de cadastro proprio.
+
+O build da Vercel gera o Prisma Client, aplica `prisma migrate deploy` e somente
+entao compila o Next.js. Uma falha de migration interrompe o deploy. O usuario
+da conexao de migrations precisa ter permissao para alterar o schema.
+`pnpm build` continua apenas gerando o client e compilando, sem migrar o banco.
+
+**Atencao:** migrations aplicadas nao sao desfeitas se a compilacao falhar
+depois, nem ao fazer rollback na Vercel. Mantenha migrations compativeis com a
+versao da aplicacao ainda em producao e backups antes de mudancas destrutivas.
+Nao execute `pnpm build:vercel` localmente apontando para producao apenas para
+testar o build.
+
+### 3. Validar o deploy
+
+- Abra a home, cadastre uma conta e teste login/logout por HTTPS.
+- Crie um top e pesquise jogos para conferir o banco e o token do catalogo.
+- Se habilitado, teste a conexao Ludopedia no perfil.
+- Consulte os logs do build e das Functions se houver falhas.
+- Depois de mudar variaveis na Vercel, faca um novo deploy para aplica-las.
+
+Referencias: [Next.js na Vercel](https://vercel.com/docs/frameworks/full-stack/nextjs)
+e [Prisma na Vercel](https://www.prisma.io/docs/orm/prisma-client/deployment/serverless/deploy-to-vercel).

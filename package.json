@@ -9,6 +9,7 @@
     "dev": "next dev",
     "prebuild": "pnpm db:generate",
     "build": "next build",
+    "build:vercel": "pnpm db:generate && pnpm db:migrate && next build",
     "start": "next start",
     "lint": "eslint",
     "test:profile": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/profile-tests lib/profile-schema.ts client/ludopedia-oauth.ts tests/profile.test.ts && node --test .next/profile-tests/tests/profile.test.js",
@@ -54,5 +55,8 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "packageManager": "pnpm@10.27.0"
+  "packageManager": "pnpm@10.27.0",
+  "engines": {
+    "node": "22.x"
+  }
 }
