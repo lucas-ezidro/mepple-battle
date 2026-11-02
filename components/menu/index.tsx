@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleUserRound, HelpCircle, Home as HomeIcon, Podium, ListSortAscending } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CircleUserRound, HelpCircle, Home as HomeIcon, Podium, ListSortAscending } from "lucide-react";
 
 const items = [
   { href: "/profile", label: "Perfil", icon: CircleUserRound },
