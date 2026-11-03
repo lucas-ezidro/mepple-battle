@@ -43,15 +43,20 @@ function UserSearch() {
 
 export function Feed() {
   return (
-      <main className="mx-auto flex w-full max-w-2xl min-w-0 flex-col gap-6 p-4 sm:p-6 wrap-anywhere">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div><h1 className="text-2xl font-semibold">Seu feed</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Seus tops e os de quem você segue, do mais recente ao mais antigo.</p>
-          </div>
-          <Link href="/top-games" className="text-sm underline underline-offset-4">Meus tops</Link>
+    <main className="mx-auto flex w-full max-w-2xl min-w-0 flex-col gap-6 p-4 sm:p-6 wrap-anywhere">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1
+            className="text-2xl font-extrabold text-center sm:text-left bg-linear-to-l from-zinc-100 via-zinc-300 to-zinc-500 bg-clip-text text-transparent drop-shadow-[0_2px_2px_rgba(180,83,9,0.35)] tracking-tight"
+          >
+            The Meepleverse
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground text-center sm:text-left">Compartilhe suas escolhas. Descubra novas perspectivas</p>
         </div>
-        <UserSearch />
-        <PostStream path="/api/feed" emptyMessage="Ainda não há tops no seu feed. Crie um top ou encontre pessoas acima e siga seus perfis para acompanhar as publicações." />
-      </main>
+        <Link href="/top-games" className="text-sm text-zinc-400 hover:text-zinc-100 hover:underline underline-offset-4 hidden sm:block">Meus tops</Link>
+      </div>
+      <UserSearch />
+      <PostStream path="/api/feed" emptyMessage="Ainda não há tops no seu feed. Crie um top ou encontre pessoas acima e siga seus perfis para acompanhar as publicações." />
+    </main>
   );
 }
