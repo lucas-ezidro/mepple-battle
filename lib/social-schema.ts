@@ -64,6 +64,7 @@ export interface UserProfile extends SocialUser {
   tops: number;
 }
 export interface SocialPost {
+  kind: "rank";
   id: string;
   type: string;
   year: number | null;
@@ -71,6 +72,32 @@ export interface SocialPost {
   createdAt: string;
   author: SocialUser;
   games: { gameId: number; name: string; thumb: string }[];
+  likes: LikeState;
+  commentCount: number;
+}
+export interface SocialTierListColumn {
+  label: string;
+  games: { gameId: number; name: string; thumb: string }[];
+}
+export interface SocialTierListPost {
+  kind: "tier-list";
+  id: string;
+  createdAt: string;
+  author: SocialUser;
+  columns: SocialTierListColumn[];
+  likes: LikeState;
+  commentCount: number;
+}
+export type SocialFeedItem = SocialPost | SocialTierListPost;
+export interface SocialFaqQuestion {
+  kind: "faq";
+  id: string;
+  createdAt: string;
+  author: SocialUser;
+  title: string;
+  body: string;
+  theme: string | null;
+  game: { gameId: number; name: string; thumb: string } | null;
   likes: LikeState;
   commentCount: number;
 }

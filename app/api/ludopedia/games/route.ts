@@ -17,10 +17,24 @@ export async function GET(request: Request) {
     const search = new URL(request.url).searchParams.get("search") ?? "";
     if (search) ludopediaUrl.searchParams.set("search", search);
     ludopediaUrl.searchParams.set("rows", "20");
-    const response = await fetch(ludopediaUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      cache: "no-store",
-    });
+
+    // Ludopedia's edge occasionally resets the TLS connection; retry transient network failures.
+    let response: Response | undefined;
+    let networkError: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await fetch(ludopediaUrl, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          cache: "no-store",
+        });
+        networkError = undefined;
+        break;
+      } catch (error) {
+        networkError = error;
+        if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
+      }
+    }
+    if (!response) throw networkError;
     if (response.status === 401 || response.status === 403) {
       console.error("[GET /api/ludopedia/games] Token do catálogo recusado", response.status);
       return NextResponse.json({

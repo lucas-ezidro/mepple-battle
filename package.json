@@ -16,7 +16,8 @@
     "test:auth": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/auth-tests tests/auth.test.ts && node --test .next/auth-tests/tests/auth.test.js",
     "test:social": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/social-tests tests/social.test.ts && node --test .next/social-tests/tests/social.test.js",
     "test:games": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/games-tests tests/ludopedia-games.test.ts && node --test .next/games-tests/tests/ludopedia-games.test.js",
-    "test:rank-images": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --jsx react-jsx --skipLibCheck --outDir .next/rank-image-tests tests/rank-images.test.tsx && node --test .next/rank-image-tests/tests/rank-images.test.js"
+    "test:rank-images": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --jsx react-jsx --skipLibCheck --outDir .next/rank-image-tests tests/rank-images.test.tsx && node --test .next/rank-image-tests/tests/rank-images.test.js",
+    "test:tier-lists": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/tier-lists-tests app/tier-lists/helpers.ts lib/tier-list-schema.ts tests/tier-lists.test.ts && node --test .next/tier-lists-tests/tests/tier-lists.test.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -27,6 +28,7 @@
     "@tanstack/react-query": "^5.105.0",
     "axios": "^1.21.0",
     "class-variance-authority": "^0.7.1",
+    "cloudinary": "^2.11.0",
     "cn": "^0.5.1",
     "cookies-next": "^4.2.1",
     "date-fns": "^4.4.0",

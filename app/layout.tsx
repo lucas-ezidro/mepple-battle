@@ -23,6 +23,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "A Batalha dos Meeples",
   description: "Organize sua estante, pontue cada partida e monte o pódio definitivo",
+  icons: {
+    icon: "/logo3.png",
+    shortcut: "/logo3.png",
+    apple: "/logo3.png",
+  },
 };
 
 export const viewport: Viewport = {

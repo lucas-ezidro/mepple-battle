@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GameThumbnail } from "@/components/ranks/game-thumbnail";
-import type { SocialPost } from "@/lib/social-schema";
+import { COLUMN_COLORS } from "@/app/tier-lists/helpers";
+import type { SocialFeedItem, SocialPost, SocialTierListPost } from "@/lib/social-schema";
 import { LikeButton, SocialErrorNotice, useSocialPages, UserLink } from "./shared";
 import { CommentList } from "./comments";
 
-function Post({ post }: { post: SocialPost }) {
+function RankPost({ post }: { post: SocialPost }) {
   const [comments, setComments] = useState(false);
   return (
     <article aria-label={`Top ${post.type}`} className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-4">
@@ -45,13 +46,55 @@ function Post({ post }: { post: SocialPost }) {
           <MessageCircle aria-hidden="true" /> Comentários ({post.commentCount})
         </Button>
       </div>
-      {comments && <CommentList rankId={post.id} />}
+      {comments && <CommentList postKind="rank" postId={post.id} />}
     </article>
   );
 }
 
+function TierListPost({ post }: { post: SocialTierListPost }) {
+  const [comments, setComments] = useState(false);
+  return (
+    <article aria-label="Tier list" className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-4">
+      <UserLink user={post.author} />
+      <div className="min-w-0">
+        <h2 className="font-semibold wrap-anywhere">Tier list</h2>
+        <time dateTime={post.createdAt} className="text-xs text-muted-foreground">
+          {new Date(post.createdAt).toLocaleString("pt-BR")}
+        </time>
+      </div>
+      <div className="flex min-w-0 flex-col gap-1.5">
+        {post.columns.map((column, index) => (
+          <div key={`${column.label}-${index}`} className="flex min-w-0 items-stretch overflow-hidden rounded-md border border-border">
+            <div className={`flex w-16 shrink-0 items-center justify-center p-1 ${COLUMN_COLORS[index % COLUMN_COLORS.length]}`}>
+              <span className="w-full min-w-0 truncate text-center text-sm font-bold text-white">{column.label}</span>
+            </div>
+            <ul className="flex min-h-14 min-w-0 flex-1 flex-wrap items-center gap-1.5 bg-muted/40 p-1.5">
+              {column.games.length ? column.games.map((game) => (
+                <li key={game.gameId}>
+                  <GameThumbnail src={game.thumb} name={game.name} size={28} decorative />
+                </li>
+              )) : <li className="text-xs text-muted-foreground">Vazio</li>}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-start gap-2 border-t border-border pt-3">
+        <LikeButton id={post.id} kind="tier-list" initial={post.likes} />
+        <Button variant="ghost" size="sm" aria-expanded={comments} onClick={() => setComments(!comments)}>
+          <MessageCircle aria-hidden="true" /> Comentários ({post.commentCount})
+        </Button>
+      </div>
+      {comments && <CommentList postKind="tier-list" postId={post.id} />}
+    </article>
+  );
+}
+
+function Post({ post }: { post: SocialFeedItem }) {
+  return post.kind === "tier-list" ? <TierListPost post={post} /> : <RankPost post={post} />;
+}
+
 export function PostStream({ path, emptyMessage }: { path: string; emptyMessage: string }) {
-  const query = useSocialPages<SocialPost>(path, ["posts", path]);
+  const query = useSocialPages<SocialFeedItem>(path, ["posts", path]);
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetching, error, fetchNextPage } = query;
   useEffect(() => {

@@ -1,9 +1,7 @@
-import { socialPosts, socialResponse } from "@/lib/social-server";
-import { socialFeedWhere } from "@/lib/social-schema";
+import { socialFeed, socialResponse } from "@/lib/social-server";
 
 export async function GET(request: Request) {
-  return socialResponse("[GET /api/feed]", (viewerId) => socialPosts(
-    viewerId, socialFeedWhere(viewerId),
-    new URL(request.url).searchParams.get("cursor")
+  return socialResponse("[GET /api/feed]", (viewerId) => socialFeed(
+    viewerId, new URL(request.url).searchParams.get("cursor")
   ));
 }

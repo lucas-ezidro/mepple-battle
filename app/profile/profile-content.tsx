@@ -266,6 +266,9 @@ export function ProfileContent() {
                 setState({ ...state, profile });
                 setEditing(false);
               }}
+              onAvatarUploaded={(profile) => {
+                setState({ ...state, profile });
+              }}
               onUnauthenticated={() => {
                 setEditing(false);
                 setState({ status: "unauthenticated" });

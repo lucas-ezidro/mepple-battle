@@ -31,3 +31,21 @@ export async function updateProfile(values: ProfileFormValues): Promise<ProfileD
   await checkResponse(response, "Falha ao atualizar o perfil");
   return response.json();
 }
+
+export async function uploadAvatar(file: File): Promise<ProfileDetails> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch("/api/profile/avatar", { method: "POST", body: formData });
+
+  if (response.status === 401) throw new Error("not_authenticated");
+  if (response.status === 400) {
+    const data: { error?: string } = await response.json();
+    throw new Error(
+      data.error === "invalid_type" ? "invalid_avatar_type"
+        : data.error === "file_too_large" ? "avatar_too_large"
+          : "invalid_avatar"
+    );
+  }
+  if (!response.ok) throw new Error("Falha ao enviar a foto de perfil");
+  return response.json();
+}

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CircleUserRound } from "lucide-react";
 import { toast } from "sonner";
-import { updateProfile } from "@/client/profile-api";
+import { updateProfile, uploadAvatar } from "@/client/profile-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,14 +18,20 @@ interface ProfileFormProps {
   profile: ProfileDetails;
   onCancel: () => void;
   onSaved: (profile: ProfileDetails) => void;
+  onAvatarUploaded: (profile: ProfileDetails) => void;
   onUnauthenticated: () => void;
 }
 
-export function ProfileForm({ profile, onCancel, onSaved, onUnauthenticated }: ProfileFormProps) {
+export function ProfileForm({ profile, onCancel, onSaved, onAvatarUploaded, onUnauthenticated }: ProfileFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
@@ -35,6 +43,35 @@ export function ProfileForm({ profile, onCancel, onSaved, onUnauthenticated }: P
       avatarUrl: profile.avatarUrl ?? "",
     },
   });
+  const avatarUrl = watch("avatarUrl");
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setAvatarError(null);
+    setAvatarUploading(true);
+    try {
+      const saved = await uploadAvatar(file);
+      setValue("avatarUrl", saved.avatarUrl ?? "", { shouldDirty: true });
+      setAvatarFailed(false);
+      onAvatarUploaded(saved);
+      toast.success("Foto de perfil atualizada");
+    } catch (error) {
+      if (error instanceof Error && error.message === "not_authenticated") {
+        onUnauthenticated();
+      } else if (error instanceof Error && error.message === "invalid_avatar_type") {
+        setAvatarError("Envie uma imagem JPEG, PNG ou WebP.");
+      } else if (error instanceof Error && error.message === "avatar_too_large") {
+        setAvatarError("A imagem deve ter até 5 MB.");
+      } else {
+        setAvatarError("Não foi possível enviar a foto. Tente novamente.");
+      }
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   const onSubmit = async (values: ProfileFormValues) => {
     setSubmitError(null);
@@ -124,23 +161,48 @@ export function ProfileForm({ profile, onCancel, onSaved, onUnauthenticated }: P
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="profile-avatar">Link da foto de perfil</Label>
-            <Input
-              id="profile-avatar"
-              type="url"
-              placeholder="https://exemplo.com/foto.jpg"
-              maxLength={2048}
-              aria-invalid={Boolean(errors.avatarUrl)}
-              aria-describedby={errors.avatarUrl ? "profile-avatar-error" : "profile-avatar-hint"}
-              disabled={isSubmitting}
-              {...register("avatarUrl")}
-            />
+            <Label htmlFor="profile-avatar-file">Foto de perfil</Label>
+            <div className="flex items-center gap-3">
+              <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
+                {avatarUrl && !avatarFailed ? (
+                  <Image
+                    key={avatarUrl}
+                    src={avatarUrl}
+                    alt=""
+                    width={64}
+                    height={64}
+                    unoptimized
+                    referrerPolicy="no-referrer"
+                    className="size-full object-cover"
+                    onError={() => setAvatarFailed(true)}
+                  />
+                ) : (
+                  <CircleUserRound className="size-9 text-muted-foreground" aria-hidden="true" />
+                )}
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <Input
+                  id="profile-avatar-file"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-describedby={avatarError ? "profile-avatar-error" : "profile-avatar-hint"}
+                  disabled={isSubmitting || avatarUploading}
+                  onChange={(event) => { void handleAvatarChange(event); }}
+                />
+                {avatarUploading && (
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground" role="status">
+                    <Spinner /> Enviando foto...
+                  </p>
+                )}
+              </div>
+            </div>
+            <input type="hidden" {...register("avatarUrl")} />
             <p id="profile-avatar-hint" className="text-xs text-muted-foreground">
-              Informe o link HTTPS de uma imagem acessível publicamente.
+              JPEG, PNG ou WebP, até 5 MB.
             </p>
-            {errors.avatarUrl && (
+            {avatarError && (
               <p id="profile-avatar-error" className="text-xs text-destructive" role="alert">
-                {errors.avatarUrl.message}
+                {avatarError}
               </p>
             )}
           </div>

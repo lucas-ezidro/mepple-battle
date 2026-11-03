@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider, useInfiniteQuery, useQueryClient, typ
 import { CircleUserRound, Heart } from "lucide-react";
 import { SocialApiError, socialRequest } from "@/client/social-api";
 import { Button } from "@/components/ui/button";
-import type { LikeState, SocialComment, SocialPage, SocialPost, SocialUser } from "@/lib/social-schema";
+import type { LikeState, SocialPage, SocialUser } from "@/lib/social-schema";
 
 export function SocialProvider({ children }: { children: ReactNode }) {
   const [client] = useState(() => new QueryClient({
@@ -61,20 +61,31 @@ export function UserLink({ user }: { user: SocialUser }) {
   );
 }
 
-export function LikeButton({ id, kind, initial }: { id: string; kind: "rank" | "comment"; initial: LikeState }) {
+type LikeKind = "rank" | "tier-list" | "comment" | "tier-list-comment" | "faq" | "faq-comment";
+
+const LIKE_CONFIG: Record<LikeKind, { path: string; noun: string; queryKey: string }> = {
+  rank: { path: "ranks", noun: "top", queryKey: "posts" },
+  "tier-list": { path: "tier-list-posts", noun: "tier list", queryKey: "posts" },
+  comment: { path: "comments", noun: "comentário", queryKey: "comments" },
+  "tier-list-comment": { path: "tier-list-comments", noun: "comentário", queryKey: "comments" },
+  faq: { path: "faq", noun: "dúvida", queryKey: "faq-questions" },
+  "faq-comment": { path: "faq-comments", noun: "comentário", queryKey: "comments" },
+};
+
+export function LikeButton({ id, kind, initial }: { id: string; kind: LikeKind; initial: LikeState }) {
   const queryClient = useQueryClient();
-  const target = kind === "rank" ? "top" : "comentário";
+  const { path, noun, queryKey } = LIKE_CONFIG[kind];
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const like = async () => {
     setPending(true);
     setError(null);
     try {
-      const updated = await socialRequest<LikeState>(`/api/${kind === "rank" ? "ranks" : "comments"}/${id}/likes`, {
+      const updated = await socialRequest<LikeState>(`/api/${path}/${id}/likes`, {
         method: initial.liked ? "DELETE" : "PUT",
       });
-      queryClient.setQueriesData<InfiniteData<SocialPage<SocialPost | SocialComment>>>({
-        queryKey: [kind === "rank" ? "posts" : "comments"],
+      queryClient.setQueriesData<InfiniteData<SocialPage<{ id: string; likes: LikeState }>>>({
+        queryKey: [queryKey],
       }, (data) => data && ({
         ...data,
         pages: data.pages.map((page) => ({
@@ -88,7 +99,7 @@ export function LikeButton({ id, kind, initial }: { id: string; kind: "rank" | "
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <Button variant="ghost" size="sm" aria-pressed={initial.liked} disabled={pending} onClick={like}
-        aria-label={`${initial.liked ? "Remover curtida do" : "Curtir"} ${target}`}>
+        aria-label={`${initial.liked ? "Remover curtida do" : "Curtir"} ${noun}`}>
         <Heart aria-hidden="true" className={initial.liked ? "fill-rose-500 text-rose-500" : ""} />
         <span>{initial.count}</span>
       </Button>

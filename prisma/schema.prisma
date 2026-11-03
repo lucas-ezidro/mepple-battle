@@ -8,23 +8,32 @@ datasource db {
 }
 
 model User {
-  id              String      @id @default(cuid())
-  ludopediaUserId Int?        @unique
-  name            String?
-  username        String?     @unique
-  email           String?
-  fullName        String?
-  avatarUrl       String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  ranks           Rank[]
-  followers       Follow[]    @relation("UserFollowers")
-  following       Follow[]    @relation("UserFollowing")
-  credential      Credential?
-  sessions        Session[]
-  rankLikes       RankLike[]
-  comments        Comment[]
-  commentLikes    CommentLike[]
+  id                       String                    @id @default(cuid())
+  ludopediaUserId          Int?                      @unique
+  name                     String?
+  username                 String?                   @unique
+  email                    String?
+  fullName                 String?
+  avatarUrl                String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  ranks                    Rank[]
+  followers                Follow[]                  @relation("UserFollowers")
+  following                Follow[]                  @relation("UserFollowing")
+  credential               Credential?
+  sessions                 Session[]
+  rankLikes                RankLike[]
+  comments                 Comment[]
+  commentLikes             CommentLike[]
+  tierList                 TierList?
+  tierListPosts            TierListPost[]
+  tierListPostLikes        TierListPostLike[]
+  tierListPostComments     TierListPostComment[]
+  tierListPostCommentLikes TierListPostCommentLike[]
+  faqQuestions             FaqQuestion[]
+  faqQuestionLikes         FaqQuestionLike[]
+  faqQuestionComments      FaqQuestionComment[]
+  faqQuestionCommentLikes  FaqQuestionCommentLike[]
 }
 
 model Credential {
@@ -84,8 +93,8 @@ model Rank {
 model RankLike {
   userId String
   rankId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rank   Rank @relation(fields: [rankId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rank   Rank   @relation(fields: [rankId], references: [id], onDelete: Cascade)
 
   @@id([userId, rankId])
   @@index([rankId])
@@ -129,4 +138,149 @@ model RankGame {
   thumb    String
 
   @@unique([rankId, position])
+}
+
+model TierList {
+  id        String           @id @default(cuid())
+  userId    String           @unique
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  columns   TierListColumn[]
+}
+
+// kind "pool" holds games the user selected but hasn't placed in a tier yet; exactly one per tier list.
+model TierListColumn {
+  id         String         @id @default(cuid())
+  tierListId String
+  tierList   TierList       @relation(fields: [tierListId], references: [id], onDelete: Cascade)
+  kind       String         @default("tier")
+  label      String
+  position   Int
+  games      TierListGame[]
+
+  @@unique([tierListId, position])
+  @@index([tierListId])
+}
+
+model TierListGame {
+  id       String         @id @default(cuid())
+  columnId String
+  column   TierListColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  position Int
+  gameId   Int
+  name     String
+  thumb    String
+
+  @@unique([columnId, position])
+  @@index([columnId])
+}
+
+// Immutable snapshot of a tier list, published by the user so it can appear in the feed.
+model TierListPost {
+  id        String                @id @default(cuid())
+  userId    String
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime              @default(now())
+  columns   Json
+  likes     TierListPostLike[]
+  comments  TierListPostComment[]
+
+  @@index([userId])
+  @@index([createdAt, id])
+}
+
+model TierListPostLike {
+  userId         String
+  tierListPostId String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tierListPost   TierListPost @relation(fields: [tierListPostId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tierListPostId])
+  @@index([tierListPostId])
+}
+
+model TierListPostComment {
+  id             String                    @id @default(cuid())
+  tierListPostId String
+  userId         String
+  parentId       String?
+  body           String
+  createdAt      DateTime                  @default(now())
+  tierListPost   TierListPost              @relation(fields: [tierListPostId], references: [id], onDelete: Cascade)
+  user           User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent         TierListPostComment?      @relation("TierListPostReplies", fields: [parentId, tierListPostId], references: [id, tierListPostId], onDelete: Cascade)
+  replies        TierListPostComment[]     @relation("TierListPostReplies")
+  likes          TierListPostCommentLike[]
+
+  @@unique([id, tierListPostId])
+  @@index([tierListPostId, parentId, createdAt, id])
+  @@index([userId])
+}
+
+model TierListPostCommentLike {
+  userId    String
+  commentId String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   TierListPostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([commentId])
+}
+
+// A question about board games, visible to every user (not limited to followers).
+model FaqQuestion {
+  id        String               @id @default(cuid())
+  userId    String
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  theme     String?
+  gameId    Int?
+  gameName  String?
+  gameThumb String?
+  createdAt DateTime             @default(now())
+  likes     FaqQuestionLike[]
+  comments  FaqQuestionComment[]
+
+  @@index([userId])
+  @@index([createdAt, id])
+}
+
+model FaqQuestionLike {
+  userId        String
+  faqQuestionId String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  faqQuestion   FaqQuestion @relation(fields: [faqQuestionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, faqQuestionId])
+  @@index([faqQuestionId])
+}
+
+model FaqQuestionComment {
+  id            String                   @id @default(cuid())
+  faqQuestionId String
+  userId        String
+  parentId      String?
+  body          String
+  createdAt     DateTime                 @default(now())
+  faqQuestion   FaqQuestion              @relation(fields: [faqQuestionId], references: [id], onDelete: Cascade)
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        FaqQuestionComment?      @relation("FaqQuestionReplies", fields: [parentId, faqQuestionId], references: [id, faqQuestionId], onDelete: Cascade)
+  replies       FaqQuestionComment[]     @relation("FaqQuestionReplies")
+  likes         FaqQuestionCommentLike[]
+
+  @@unique([id, faqQuestionId])
+  @@index([faqQuestionId, parentId, createdAt, id])
+  @@index([userId])
+}
+
+model FaqQuestionCommentLike {
+  userId    String
+  commentId String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   FaqQuestionComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([commentId])
 }
