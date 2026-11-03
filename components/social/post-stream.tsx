@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GameThumbnail } from "@/components/ranks/game-thumbnail";
 import type { SocialPost } from "@/lib/social-schema";
 import { LikeButton, SocialErrorNotice, useSocialPages, UserLink } from "./shared";
 import { CommentList } from "./comments";
@@ -12,20 +13,26 @@ function Post({ post }: { post: SocialPost }) {
   return (
     <article aria-label={`Top ${post.type}`} className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-4">
       <UserLink user={post.author} />
-      <div>
-        <h2 className="font-semibold wrap-anywhere">Top {post.type}{post.type === "100"
-          ? post.year ? ` de ${post.year}` : "" : post.theme ? ` — ${post.theme}` : ""}</h2>
-        <time dateTime={post.createdAt} className="text-xs text-muted-foreground">
-          {new Date(post.createdAt).toLocaleString("pt-BR")}
-        </time>
+      <div className="flex min-w-0 items-center gap-3">
+        {post.games[0] && (
+          <GameThumbnail src={post.games[0].thumb} name={post.games[0].name} size={36} />
+        )}
+        <div className="min-w-0">
+          <h2 className="font-semibold wrap-anywhere">Top {post.type}{post.type === "100"
+            ? post.year ? ` de ${post.year}` : "" : post.theme ? ` — ${post.theme}` : ""}</h2>
+          <time dateTime={post.createdAt} className="text-xs text-muted-foreground">
+            {new Date(post.createdAt).toLocaleString("pt-BR")}
+          </time>
+        </div>
       </div>
       <details className="min-w-0">
         <summary className="cursor-pointer text-sm">Ver jogos ({post.games.length})</summary>
         {post.games.length ? (
           <ol className="mt-3 flex min-w-0 flex-col gap-2">
             {post.games.map((game, index) => (
-              <li key={`${game.gameId}-${index}`} className="flex min-w-0 gap-2 text-sm">
-                <span className="shrink-0 text-muted-foreground">{index + 1}º</span>
+              <li key={`${game.gameId}-${index}`} className="flex min-w-0 items-center gap-2 text-sm">
+                <span className="w-6 shrink-0 text-muted-foreground">{index + 1}º</span>
+                <GameThumbnail src={game.thumb} name={game.name} size={28} decorative />
                 <span className="min-w-0 wrap-anywhere">{game.name}</span>
               </li>
             ))}

@@ -70,7 +70,9 @@ introduction. Search by full name or username to visit
 require login and never expose email addresses or authentication data.
 
 The feed uses ten-item keyset pages ordered by creation time and ID, loads more
-on scroll, and provides a manual loading button. Root comments and each reply
+on scroll, and provides a manual loading button. Posts preview the first game's
+image and show each game's thumbnail when expanded, both in the feed and on
+player profiles. Unavailable images have a placeholder. Root comments and each reply
 thread are independently paginated. Tops, comments, and replies support
 idempotent like/unlike actions. Replies may be nested at multiple levels; visual
 indentation is limited on narrow screens, not the reply hierarchy.
@@ -92,7 +94,8 @@ profile-image URL. The username must be unique; the email is required and update
 the login email atomically. The other profile fields may be cleared.
 
 The profile displays the user's existing tops and counts of relationships stored
-in the application's database. Follow/unfollow actions on player profiles update
+in the application's database. Each top previews its first game and shows game
+thumbnails when expanded. Follow/unfollow actions on player profiles update
 these counts and the home feed without requiring a full page reload.
 Run `pnpm db:migrate` after updating to create the profile columns and follow
 table without removing existing users or ranks. Restart the development server

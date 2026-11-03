@@ -10,6 +10,7 @@ import { getProfileRanks, type RankRecord } from "@/client/ranks-api";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { GameThumbnail } from "@/components/ranks/game-thumbnail";
 import type { ProfileDetails } from "@/lib/profile-schema";
 import { RANK_LABELS } from "@/app/top-games/helpers";
 import { ProfileForm } from "./profile-form";
@@ -97,6 +98,9 @@ function ProfileRanks({ ranks }: { ranks: RankRecord[] }) {
             <li key={rank.id}>
               <details className="group rounded-xl border border-border bg-card">
                 <summary className="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
+                  {rank.games[0] && (
+                    <GameThumbnail src={rank.games[0].thumb} name={rank.games[0].nm_jogo} size={36} />
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">{RANK_LABELS[rank.type]}</p>
                     <p className="text-sm text-muted-foreground">
@@ -112,8 +116,9 @@ function ProfileRanks({ ranks }: { ranks: RankRecord[] }) {
                 </summary>
                 <ol className="flex flex-col gap-2 border-t border-border p-4">
                   {rank.games.map((game, index) => (
-                    <li key={game.id_jogo} className="flex min-w-0 gap-2 text-sm">
+                    <li key={game.id_jogo} className="flex min-w-0 items-center gap-2 text-sm">
                       <span className="w-7 shrink-0 text-muted-foreground">{index + 1}º</span>
+                      <GameThumbnail src={game.thumb} name={game.nm_jogo} size={28} decorative />
                       <span className="min-w-0">{game.nm_jogo}</span>
                     </li>
                   ))}

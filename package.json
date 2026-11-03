@@ -15,7 +15,8 @@
     "test:profile": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/profile-tests lib/profile-schema.ts client/ludopedia-oauth.ts tests/profile.test.ts && node --test .next/profile-tests/tests/profile.test.js",
     "test:auth": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/auth-tests tests/auth.test.ts && node --test .next/auth-tests/tests/auth.test.js",
     "test:social": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/social-tests tests/social.test.ts && node --test .next/social-tests/tests/social.test.js",
-    "test:games": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/games-tests tests/ludopedia-games.test.ts && node --test .next/games-tests/tests/ludopedia-games.test.js"
+    "test:games": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .next/games-tests tests/ludopedia-games.test.ts && node --test .next/games-tests/tests/ludopedia-games.test.js",
+    "test:rank-images": "tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --jsx react-jsx --skipLibCheck --outDir .next/rank-image-tests tests/rank-images.test.tsx && node --test .next/rank-image-tests/tests/rank-images.test.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

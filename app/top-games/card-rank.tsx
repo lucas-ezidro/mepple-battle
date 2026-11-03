@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { RANK_LABELS } from "./helpers";
 import { CreateRank, type RankDraft } from "./create-rank";
 import { RankGames } from "./rank-games";
+import { GameThumbnail } from "@/components/ranks/game-thumbnail";
 import type { LudopediaGamesResponse } from "@/client/get-ludopedia-games";
 import { createRank, deleteRank, getRanks, updateRank, type RankRecord } from "@/client/ranks-api";
 
@@ -153,12 +153,10 @@ export function CardRank() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0 flex items-center gap-2">
                     {topGame && (
-                      <Image
+                      <GameThumbnail
                         src={topGame.thumb}
-                        alt={topGame.nm_jogo}
-                        width={36}
-                        height={36}
-                        className="size-9 shrink-0 rounded object-cover"
+                        name={topGame.nm_jogo}
+                        size={36}
                       />
                     )}
                     <div className="min-w-0 flex flex-col">
@@ -191,12 +189,11 @@ export function CardRank() {
                           <span className="w-6 shrink-0 text-xs font-medium text-muted-foreground">
                             {index + 1}º
                           </span>
-                          <Image
+                          <GameThumbnail
                             src={game.thumb}
-                            alt={game.nm_jogo}
-                            width={28}
-                            height={28}
-                            className="size-7 shrink-0 rounded object-cover"
+                            name={game.nm_jogo}
+                            size={28}
+                            decorative
                           />
                           <span className="min-w-0 flex-1">{game.nm_jogo}</span>
                         </li>
