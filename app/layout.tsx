@@ -7,6 +7,7 @@ import { Header } from "@/components/menu/header";
 import { Suspense } from "react";
 import { SessionActions, SessionMenu } from "@/components/auth/session-controls";
 import { SocialProvider } from "@/components/social/shared";
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </div>
         <Suspense fallback={null}><SessionMenu /></Suspense>
         <Toaster theme="dark" richColors />
+        <Analytics />
       </body>
     </html>
   );
